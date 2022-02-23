@@ -4,7 +4,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import db.DB;
 import db.DbExceptions;
@@ -90,6 +93,45 @@ public class SellerDaoJDBC implements SellerDao {
 	public List<Seller> findAll() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public List<Seller> findByDepartment(Department department) {
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+		try {
+			pst = conn.prepareStatement("SELECT seller.*,department.Name as DepName "
+					+ "FROM seller INNER JOIN department "
+					+ "ON seller.DepartmentId = department.Id "
+					+ "WHERE DepartmentId = ? "
+					+ "ORDER BY Name");
+			
+			pst.setInt(1, department.getId());
+			rs = pst.executeQuery();
+			
+			List<Seller> list = new ArrayList<>();
+			Map<Integer, Department> map = new HashMap<>();//criei um map vazio e vou guardar dentro dele qualquer departamento que eu instanciar
+			
+			while (rs.next()) {//cada vez que passar aqui, terei que testar se o departamento já existe
+				
+				Department dep = map.get(rs.getInt("DepartmentId"));//busco o departamento aqui, se não existir retorna nulo
+				
+				if(dep == null) {
+					dep = instatiateDepartment(rs);//caso não exista o departamento, instancio ele aqui
+					map.put(rs.getInt("DepartmentId"), dep);//salvo o departamento dentro do map para que na próxima vez eu possa ver se existe ou não
+				}
+				
+				Seller obj = instatiateSeller(rs, dep);
+				list.add(obj);				
+			}			
+			return list;
+			
+		} catch(SQLException e) {
+			throw new DbExceptions(e.getMessage());
+		} finally {
+			DB.closeStatement(pst);
+			DB.closeResultSet(rs);
+		}
 	}
 
 }
