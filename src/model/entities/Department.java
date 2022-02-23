@@ -9,6 +9,8 @@ public class Department implements Serializable {
 	private Integer id;
 	private String nome;
 	
+	public Department() {}
+	
 	public Department(Integer id, String nome) {
 		this.id = id;
 		this.nome = nome;
@@ -57,6 +59,6 @@ public class Department implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Department [id=" + id + ", nome=" + nome + "]";
+		return "Department [id = " + id + ", nome = " + nome + "]";
 	}
 }
