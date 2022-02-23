@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,8 +26,41 @@ public class SellerDaoJDBC implements SellerDao {
 
 	@Override
 	public void insert(Seller obj) {
-		// TODO Auto-generated method stub
 		
+		PreparedStatement pst = null;
+		
+		try {
+			pst = conn.prepareStatement("INSERT INTO seller "
+					+ "		(Name, Email, BirthDate, BaseSalary, DepartmentId) "
+					+ "		VALUES "
+					+ "		(?, ?, ?, ?, ?)", 
+					Statement.RETURN_GENERATED_KEYS);//retorna o id do novo vendedor inserido
+			
+			pst.setString(1, obj.getName());
+			pst.setString(2, obj.getEmail());
+			pst.setDate(3, new java.sql.Date(obj.getBirthDate().getTime()));
+			pst.setDouble(4, obj.getBaseSalary());
+			pst.setInt(5, obj.getDepartment().getId());
+			
+			int rowsAffected = pst.executeUpdate();
+			
+			if(rowsAffected > 0) {//se for maior que 0, significa que inseriu
+				ResultSet rs = pst.getGeneratedKeys();
+				if(rs.next()) {//se existir, pego o id gerado e atribuo dentro do objeto obj, assim ele ja fica populado com o novo id dele
+					int id = rs.getInt(1);
+					obj.setId(id);
+				}
+				
+				DB.closeResultSet(rs);
+				
+			} else {
+				throw new DbExceptions("Erro inesperado! Nenhuma linha foi alterada!");
+			}
+		} catch (SQLException e) {
+			throw new DbExceptions(e.getMessage());
+		} finally {
+			DB.closeStatement(pst);
+		}
 	}
 
 	@Override
