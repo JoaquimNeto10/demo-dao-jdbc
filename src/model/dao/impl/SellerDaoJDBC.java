@@ -86,8 +86,7 @@ public class SellerDaoJDBC implements SellerDao {
 			throw new DbExceptions(e.getMessage());
 		} finally {
 			DB.closeStatement(pst);
-		}
-		
+		}		
 	}
 
 	@Override
